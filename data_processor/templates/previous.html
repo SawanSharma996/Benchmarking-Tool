@@ -1,0 +1,392 @@
+<!-- templates/display_excel.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Uploaded Excel Data</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.5/css/dataTables.bootstrap4.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+        }
+        h1, h3 {
+            color: #333;
+        }
+        .container {
+            margin-top: 30px;
+        }
+        .action-btn {
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        #counter-info {
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        textarea {
+            font-size: 14px;
+            padding: 10px;
+            border-radius: 3px;
+            resize: vertical;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+        .modal-header {
+            background-color: #007bff;
+            color: white;
+        }
+        .dataTables_wrapper .dataTables_paginate .paginate_button {
+            padding: 0;
+        }
+        .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+            background: none;
+            border: none;
+        }
+        .action-btn:disabled {
+            cursor: not-allowed;
+        }
+        table {
+            table-layout: auto;
+            width: 100%;
+        }
+
+        th, td {
+            white-space: normal;
+            word-wrap: break-word;
+            vertical-align: top;
+        }
+        td {
+            max-width: 600px;  /* Adjust as needed */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Uploaded Excel Data</h1>
+        <div id="counter-info">
+            Total Companies: <span id="total-companies">{{ data|length }}</span><br>
+            Companies with Fetched Data: <span id="fetched-companies">0</span>
+        </div>
+        <div class="mb-3">
+            <!-- Action Buttons -->
+            <button type="button" class="btn btn-primary action-btn" data-toggle="modal" data-target="#searchModal">
+                Search Strategy
+            </button>
+            <button id="fetch-all-btn" class="btn btn-success action-btn">Fetch Data for All Companies</button>
+            <button id="stop-fetch-btn" class="btn btn-danger action-btn" style="display: none;">Stop Fetching</button>
+            <button id="export-pdf-btn" class="btn btn-warning action-btn">Export Screenshot</button>
+        </div>
+
+        <!-- Search Modal -->
+        <div class="modal fade" id="searchModal" tabindex="-1" aria-labelledby="searchModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <!-- modal-lg for larger modal -->
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title"><strong>Search Strategy</strong></h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">    
+                            <span aria-hidden="true">&times;</span>
+                        </button>  
+                    </div>
+                    <div class="modal-body">
+                        <!-- Search Form -->
+                        <div class="search-form">
+                            <div class="form-group">
+                                <label for="functionality-search">Company Functionality:</label>
+                                <input type="text" id="functionality-search" class="form-control" placeholder="Enter company functionality">
+                            </div>
+                            <div class="form-group">
+                                <label for="products-services-search">Products/Services:</label>
+                                <input type="text" id="products-services-search" class="form-control" placeholder="Enter products or services">
+                            </div>
+                            <div class="form-group">
+                                <label for="group-search">Part of Group:</label>
+                                <select id="group-search" class="form-control">
+                                    <option value="">Select an option</option>
+                                    <option value="yes">Yes</option>
+                                    <option value="no">No</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <button id="generate-keywords-btn" class="btn btn-secondary action-btn">Generate Keywords</button>
+                                <button id="search-btn" class="btn btn-primary action-btn">Search</button>
+                                <button id="reset-search-btn" class="btn btn-outline-secondary action-btn">Reset Search</button>
+                            </div>
+                        </div>
+                        <div>
+                            <h5>Functionality Keywords:</h5>
+                            <textarea id="functionality-keywords" rows="4"></textarea>
+                        </div>
+                        <div>
+                            <h5>Products/Services Keywords:</h5>
+                            <textarea id="products-services-keywords" rows="4"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Table -->
+        <div class="table-responsive">
+            <table id="data-table" class="table table-striped table-bordered">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Company Name</th>
+                        <th>Website Address</th>
+                        <th>Trade Description</th>
+                        <th>Full Overview (Database)</th>
+                        <th>Products/Services (Database)</th>
+                        <th>Business Description (By API)</th>
+                        <th>Products/Services (By API)</th>
+                        <th>Part of Group (By API)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in data %}
+                    <tr>
+                        <td><a href="{% url 'company_detail' row.id %}">
+                            {{ row.company_name }}
+                        </a>
+                        </td>
+                        <td>{{ row.website_address }}</td>
+                        <td>{{ row.trade_description }}</td>
+                        <td>{{ row.full_overview }}</td>
+                        <td>{{ row.products_servicesD }}</td>
+                        <td>{{ row.business_description }}</td>
+                        <td>{{ row.products_services }}</td>
+                        <td>{{ row.part_of_group }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- JavaScript Dependencies -->
+    <!-- jQuery and Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.bundle.min.js"></script>
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.5/js/dataTables.bootstrap4.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            var totalCompanies = {{ data|length }};
+            var fetchedCompanies = 0;
+            var functionalityKeywords = [];
+            var productsServicesKeywords = [];
+            var fetchingStopped = false;
+
+            function updateCounters() {
+                $('#total-companies').text(totalCompanies);
+                $('#fetched-companies').text(fetchedCompanies);
+            }
+
+            var table = $('#data-table').DataTable({
+                "paging": true,
+                "pageLength": 10,
+                "lengthMenu": [ [10, 25, 50, -1], [10, 25, 50, "All"] ],
+                "scrollX": true,
+                "autoWidth": false,
+                "fixedHeader": true,
+                "order": [],
+                "columnDefs": [
+                    { "orderable": false, "targets": [5,6,7] }
+                ]
+            });
+            $('#export-pdf-btn').on('click', function() {
+                window.location.href = '/export_pdf/';
+            });
+            $('#fetch-all-btn').on('click', function() {
+                var button = $(this);
+                button.prop('disabled', true).text('Fetching...');
+                $('#stop-fetch-btn').show();
+                fetchingStopped = false;
+
+                var rows = $('#data-table tbody tr');
+                var totalRows = rows.length;
+                var processedRows = 0;
+
+                function processNextRow() {
+                    if (fetchingStopped) {
+                        button.text('Fetch Data for All Companies').prop('disabled', false);
+                        $('#stop-fetch-btn').hide();
+                        return;
+                    }
+
+                    if (processedRows >= totalRows) {
+                        button.text('All data fetched').prop('disabled', false);
+                        $('#stop-fetch-btn').hide();
+                        return;
+                    }
+
+                    var row = $(rows[processedRows]);
+                    var website = row.find('td:eq(1)').text().trim();
+                    var companyName = row.find('td:eq(0)').text();
+
+                    if (!website) {
+                        processedRows++;
+                        processNextRow();
+                        return;
+                    }
+
+                    var rowNode = row.get(0);
+                    var dataTableRow = table.row(rowNode);
+
+                    $.ajax({
+                        url: '/fetch_additional_data/',
+                        method: 'POST',
+                        contentType: 'application/json',
+                        headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+                        data: JSON.stringify({
+                            website: website,
+                            company_name: companyName,
+                            trade_description: row.find('td:eq(2)').text(),
+                            full_overview: row.find('td:eq(3)').text()
+                        }),
+                        success: function(data) {
+                            if (data.error) {
+                                console.error('Error fetching data:', data.error);
+                            } else {
+                                var rowData = dataTableRow.data();
+                                rowData[5] = data.business_description || '';
+                                rowData[6] = data.products_services || '';
+                                rowData[7] = data.part_of_group || '';
+                                dataTableRow.data(rowData).draw(false);
+
+                                fetchedCompanies++;
+                                updateCounters();
+                            }
+                            processedRows++;
+                            processNextRow();
+                        },
+                        error: function(jqXHR, textStatus, errorThrown) {
+                            console.error('AJAX Error:', textStatus, errorThrown);
+                            processedRows++;
+                            processNextRow();
+                        }
+                    });
+                }
+
+                processNextRow();
+            });
+
+            $('#stop-fetch-btn').on('click', function() {
+                fetchingStopped = true;
+                $(this).hide();
+                $('#fetch-all-btn').text('Fetch Data for All Companies').prop('disabled', false);
+            });
+
+            $('#export-btn').on('click', function() {
+                window.location.href = '/export_excel/';
+            });
+
+            $('#generate-keywords-btn').on('click', function() {
+                var functionality = $('#functionality-search').val();
+                var productsServices = $('#products-services-search').val();
+
+                if (!functionality && !productsServices) {
+                    alert('Please enter functionality or products/services to generate keywords.');
+                    return;
+                }
+
+                $(this).prop('disabled', true).text('Generating...');
+
+                $.ajax({
+                    url: '/generate_related_keywords/',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+                    data: JSON.stringify({
+                        functionality: functionality,
+                        products_services: productsServices
+                    }),
+                    success: function(data) {
+                        functionalityKeywords = data.functionality || [];
+                        productsServicesKeywords = data.products_services || [];
+                        displayKeywords();
+                        $('#generate-keywords-btn').prop('disabled', false).text('Generate Keywords');
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        console.error('Error generating keywords:', textStatus, errorThrown);
+                        alert('An error occurred while generating keywords. Please try again.');
+                        $('#generate-keywords-btn').prop('disabled', false).text('Generate Keywords');
+                    }
+                });
+            });
+
+            function displayKeywords() {
+                $('#functionality-keywords').val(functionalityKeywords.join(', '));
+                $('#products-services-keywords').val(productsServicesKeywords.join(', '));
+            }
+
+            $('#search-btn').on('click', function() {
+                var partOfGroup = $('#group-search').val().toLowerCase();
+                var functionalityKeywordsInput = $('#functionality-keywords').val();
+                var productsServicesKeywordsInput = $('#products-services-keywords').val();
+
+                var functionalityKeywordsArray = functionalityKeywordsInput.split(',').map(function(item) {
+                    return item.trim();
+                }).filter(function(item) {
+                    return item.length > 0;
+                });
+
+                var productsServicesKeywordsArray = productsServicesKeywordsInput.split(',').map(function(item) {
+                    return item.trim();
+                }).filter(function(item) {
+                    return item.length > 0;
+                });
+
+                if (functionalityKeywordsArray.length === 0 && productsServicesKeywordsArray.length === 0) {
+                    alert('Please enter or generate keywords for functionality or products/services.');
+                    return;
+                }
+
+                $(this).prop('disabled', true).text('Searching...');
+
+                $.ajax({
+                    url: '/search_companies/',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+                    data: JSON.stringify({
+                        functionality_keywords: functionalityKeywordsArray,
+                        products_services_keywords: productsServicesKeywordsArray,
+                        part_of_group: partOfGroup
+                    }),
+                    success: function(data) {
+                        if (data.redirect_url) {
+                            window.location.href = data.redirect_url;
+                        } else {
+                            alert('An error occurred while processing the search.');
+                        }
+                        $('#search-btn').prop('disabled', false).text('Search');
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        console.error('Error searching companies:', textStatus, errorThrown);
+                        alert('An error occurred while searching. Please try again.');
+                        $('#search-btn').prop('disabled', false).text('Search');
+                    }
+                });
+            });
+
+            $('#reset-search-btn').on('click', function() {
+                $('#functionality-search').val('');
+                $('#products-services-search').val('');
+                $('#group-search').val('');
+                $('#functionality-keywords').val('');
+                $('#products-services-keywords').val('');
+                functionalityKeywords = [];
+                productsServicesKeywords = [];
+            });
+
+            updateCounters();
+        });
+    </script>
+</body>
+</html>

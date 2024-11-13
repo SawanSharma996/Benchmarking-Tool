@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Company Screenshots</title>
+    <style>
+        /* Add styles for the PDF */
+        body { font-family: Arial, sans-serif; }
+        .company { page-break-inside: avoid; margin-bottom: 20px; }
+        .company h2 { margin-bottom: 5px; }
+        .company img { max-width: 100%; height: auto; }
+    </style>
+</head>
+<body>
+    {% for company in companies %}
+    <div class="company">
+        <h2>{{ company.company_name }}</h2>
+        <p><strong>Website:</strong> {{ company.website_address }}</p>
+        {% if company.screenshot_base64 %}
+            <img src="{{ company.screenshot_base64 }}" alt="Screenshot">
+        {% else %}
+            <p>No Screenshot Available</p>
+        {% endif %}
+    </div>
+    {% endfor %}
+</body>
+</html>

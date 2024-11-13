@@ -1,1 +1,4 @@
-.env
+db.sqlite3
+media
+data_processor/migrations
+data_processor/__pycache__

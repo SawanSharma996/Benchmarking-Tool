@@ -1,18 +1,203 @@
-<!-- upload.html -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload Excel File</title>
+    <title>Dashboard</title>
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --primary-foreground: #ffffff;
+            --muted: #f3f4f6;
+            --muted-foreground: #6b7280;
+            --accent: #e5e7eb;
+            --accent-hover: #e2e8f0;
+            --border: #e5e7eb;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            color: #111827;
+            background-color: #f9fafb;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        .header h1 {
+            font-size: 1.75rem;
+            margin: 0;
+        }
+        .header p {
+            font-size: 1rem;
+            color: var(--muted-foreground);
+            margin: 0;
+        }
+        .card {
+            background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .upload-card {
+            text-align: center;
+            border: 1px solid var(--border);
+            padding: 2rem;
+        }
+        .upload-card h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .upload-card p {
+            font-size: 1rem;
+            color: var(--muted-foreground);
+            margin-bottom: 1.5rem;
+        }
+        .button-primary {
+            background-color: var(--primary);
+            color: var(--primary-foreground);
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 1rem;
+        }
+        .benchmark-grid {
+            display: grid;
+            gap: 1rem;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        }
+        .benchmark-card {
+            background-color: #ffffff;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            padding: 1rem;
+            transition: background-color 0.2s;
+        }
+        .benchmark-card:hover {
+            background-color: var(--accent-hover);
+        }
+        .benchmark-card h3 {
+            margin: 0;
+            font-size: 1.25rem;
+            color: #111827;
+        }
+        .benchmark-card p {
+            margin: 0.5rem 0;
+            color: var(--muted-foreground);
+        }
+    </style>
+    {% if not user.is_authenticated %}
+    <script>window.location.href = "{% url 'login' %}";</script>
+{% endif %}
 </head>
 <body>
-    <h1>Upload a new Excel File</h1>
-    <form method="POST" enctype="multipart/form-data">
-        {% csrf_token %}
-        {{ form.as_p }}
+    <div class="container">
+        <header class="header">
+            <div>
+                <h1>Dashboard</h1>
+                <p>Overview of your benchmarks and activity.</p>
+            </div>
+            <button class="button button-outline" aria-label="Help">Help</button>
+        </header>
 
-        <button type="submit">Upload</button>
-    </form>
+        <!-- Upload Card -->
+        <div class="card upload-card">
+            <h2>Start a New Benchmark</h2>
+            <p>Upload an Excel file to start a new benchmarking process.</p>
+            <form method="POST" enctype="multipart/form-data" action="{% url 'upload_file' %}">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="button-primary">Upload File</button>
+            </form>
+        </div>
+
+        <!-- Past Uploads Section -->
+        <div class="header">
+            <h2>Your Past Uploads</h2>
+        </div>
+        <div class="benchmark-grid" id="uploadGrid"></div>
+    </div>
+
+    <script>
+        const pastUploads = JSON.parse('{{ past_uploads|safe }}');
+
+        function createUploadCards() {
+            const grid = document.getElementById('uploadGrid');
+            if (pastUploads.length === 0) {
+                grid.innerHTML = '<p>No past uploads available.</p>';
+                return;
+            }
+            pastUploads.forEach(upload => {
+                const card = document.createElement('div');
+                card.className = 'card benchmark-card';
+                card.innerHTML = `
+                    <h3>${upload.name}</h3>
+                    <p>Date: ${upload.date}</p>
+                    <p>Companies: ${upload.companies}</p>
+                    <p>Status: ${upload.status}</p>
+                `;
+                grid.appendChild(card);
+            });
+        }
+    
+        document.addEventListener('DOMContentLoaded', createUploadCards);
+        document.addEventListener('DOMContentLoaded', () => {
+            fetch("{% url 'get_past_uploads' %}")
+                .then(response => response.json())
+                .then(data => {
+                    const pastUploads = data.past_uploads;
+                    const uploadGrid = document.getElementById('uploadGrid');
+                    
+                    if (pastUploads.length === 0) {
+                        uploadGrid.innerHTML = '<p>No past uploads available.</p>';
+                    } else {
+                        pastUploads.forEach(upload => {
+                            const card = document.createElement('div');
+                            card.className = 'card benchmark-card';
+                            card.innerHTML = `
+                                <h3>${upload.company_name}</h3>
+                                <p>Website: ${upload.website_address}</p>
+                                <p>Trade Description: ${upload.trade_description}</p>
+                                <p>Products/Services: ${upload.products_services}</p>
+                                <p>Full Overview: ${upload.full_overview}</p>
+                            `;
+                            uploadGrid.appendChild(card);
+                        });
+                    }
+                })
+                .catch(error => console.error('Error fetching past uploads:', error));
+        });
+
+        function createUploadCards() {
+            const grid = document.getElementById('uploadGrid');
+            pastUploads.forEach(upload => {
+                const card = document.createElement('div');
+                card.className = 'card benchmark-card';
+                card.innerHTML = `
+                    <h3>${upload.name}</h3>
+                    <p>Date: ${upload.date}</p>
+                    <p>Companies: ${upload.companies}</p>
+                    <p>Status: ${upload.status}</p>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            createUploadCards();
+        });
+    </script>
 </body>
 </html>

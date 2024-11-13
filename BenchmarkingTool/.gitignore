@@ -1,0 +1,7 @@
+.env
+__pycache__/
+*.pyc
+settings.py 
+/BenchmarkingTool/media
+/data_processor/migrations
+/BenchmarkingTool/db.sqlite3
