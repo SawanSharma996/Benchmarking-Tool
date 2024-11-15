@@ -246,10 +246,10 @@ def upload_file(request):
                 
                 # Process the Excel file
                 df = pd.read_excel(file)
-                selected_columns = df[['Company name Latin alphabet', 'Website address', 'Trade description (English)', 'Full overview', 'Products & services']]
+                selected_columns = df[['Company name Latin alphabet', 'Website address', 'Trade description (English)', 'Full overview', 'Products & services','Country' ]]
                 
                 # Rename columns to match expectations
-                selected_columns.columns = ['company_name', 'website_address', 'trade_description', 'full_overview', 'products_servicesD']
+                selected_columns.columns = ['company_name', 'website_address', 'trade_description', 'full_overview', 'products_servicesD', 'country']
                 
                 # Drop rows where company_name is null or empty
                 selected_columns = selected_columns.dropna(subset=['company_name'])
@@ -265,6 +265,7 @@ def upload_file(request):
                         trade_description=row['trade_description'],
                         full_overview=row['full_overview'],
                         products_servicesD=row['products_servicesD'],
+                        country=row['country'],
                         batch_id=batch_id
                     )
      
@@ -281,7 +282,8 @@ def display_excel(request):
     batch_id = request.session.get('batch_id')
     if batch_id:
         data = list(CompanyInfo.objects.filter(batch_id=batch_id).values())
-        return render(request, 'display_excel.html', {'data': data})
+        total_companies = len(data)
+        return render(request, 'display_excel.html', {'data': data, 'total_companies': total_companies})
     else:
         # No batch_id in session, redirect to upload page or show a message
         return redirect('upload_file')
@@ -295,6 +297,8 @@ def fetch_additional_data(request):
         company_name = data.get('company_name')
         trade_description = data.get('trade_description')
         full_overview = data.get('full_overview')
+        products_servicesD = data.get('products_servicesD')
+        country = data.get('country')
 
 
         if not website:
@@ -315,6 +319,8 @@ def fetch_additional_data(request):
             company.website_address = website
             company.trade_description = trade_description
             company.full_overview = full_overview
+            company.products_servicesD = products_servicesD
+            company.country = country
             company.products_services = company_details.get('products_services', '')
             company.business_description = company_details.get('business_description', '')
             company.part_of_group = company_details.get('part_of_group', '')

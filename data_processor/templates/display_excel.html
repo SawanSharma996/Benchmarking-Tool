@@ -22,10 +22,13 @@
             color: #333;
         }
         .container {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            width: 100vw; /* Set width to the full viewport width */
+    max-width: 100vw; /* Ensure it doesn’t exceed the viewport width */
+    margin: 0; /* Remove default margin */
+    padding: 20px; /* Optional: You can reduce padding if needed */
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
         .search-form {
             margin-bottom: 20px;
@@ -203,7 +206,7 @@
     <div class="container">
         <h1>Uploaded Excel Data</h1>
         <div id="counter-info">
-            Total Companies: <span id="total-companies">{{ data|length }}</span><br>
+            Total Companies: <span id="total-companies">{{ total_companies }}</span><br>
             Companies with Fetched Data: <span id="fetched-companies">0</span>
         </div>
         <div class="mb-3">
@@ -285,10 +288,12 @@
                     <tr>
                         <th>Company Name</th>
                         <th>Website Address</th>
-                        <th>Trade Description</th>
+                        <th>Trade Description(Database)</th>
+                        <th>Products/Services (Database)</th> <!-- New column for product_servicesD -->
+                        <th>Country</th>
                         <th>Full Overview</th>
-                        <th>Business Description</th>
-                        <th>Products/Services</th>
+                        <th>Business Description(AI Generated)</th>
+                        <th>Products/Services(AI Generated)</th>
                         <th>Part of Group</th>
                     </tr>
                 </thead>
@@ -298,6 +303,8 @@
                         <td data-fulltext="{{ row.company_name|escape }}">{{ row.company_name }}</td>
                         <td data-fulltext="{{ row.website_address|escape }}">{{ row.website_address }}</td>
                         <td data-fulltext="{{ row.trade_description|escape }}">{{ row.trade_description }}</td>
+                        <td data-fulltext="{{ row.products_servicesD|escape }}">{{ row.products_servicesD }}</td>
+                        <td data-fulltext="{{ row.country|escape }}">{{ row.country }}</td>
                         <td data-fulltext="{{ row.full_overview|escape }}">{{ row.full_overview }}</td>
                         <td data-fulltext="{{ row.business_description|escape }}">{{ row.business_description }}</td>
                         <td data-fulltext="{{ row.products_services|escape }}">{{ row.products_services }}</td>
@@ -372,9 +379,9 @@
                             if (data.error) {
                                 console.error('Error fetching data:', data.error);
                             } else {
-                                row.find('td:eq(4)').text(data.business_description || '');
-                                row.find('td:eq(5)').text(data.products_services || '');
-                                row.find('td:eq(6)').text(data.part_of_group || '');
+                                row.find('td:eq(6)').text(data.business_description || '');
+                                row.find('td:eq(7)').text(data.products_services || '');
+                                row.find('td:eq(8)').text(data.part_of_group || '');
                                 fetchedCompanies++;
                                 updateCounters();
                             }

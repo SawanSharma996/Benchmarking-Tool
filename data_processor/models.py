@@ -13,6 +13,7 @@ class CompanyInfo(models.Model):
     products_services = models.TextField(blank=True, null=True)
     part_of_group = models.TextField(blank=True,default=False)
     products_servicesD = models.TextField(null=True, blank=True)
+    country = models.CharField(max_length=255, blank= True, null= True)
     batch_id = models.UUIDField(default=uuid.uuid4, editable=False)
     screenshot = models.ImageField(upload_to='screenshots/', null=True, blank=True)
 
